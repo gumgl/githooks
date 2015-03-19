@@ -6,6 +6,13 @@
 #		removes the quotes if path is quoted by git
 #		keeps only the location of each path (i.e. gets rid of file names and files in root)
 
+#CONFIG
+before="." # comes before the path
+default="/" # replaces the path if we're at the root
+after=": " # separates the path and the commit msg
+
+
+#SCRIPT
 paths=`git status --porcelain \
 	| sed -r -e '/^\?\?/d' \
 		-e 's/^.{3}//' \
