@@ -6,43 +6,27 @@
 #		removes the quotes if path is quoted by git
 #		keeps only the location of each path (i.e. gets rid of file names and files in root)
 
-#git status --porcelain
-cmd=`cat $1`
-#cmd=`git status --porcelain`
-echo "$cmd"
-echo "=================="
-paths=`echo "$cmd" \
+paths=`git status --porcelain \
 	| sed -r -e '/^\?\?/d' \
 		-e 's/^.{3}//' \
 		-e 's/ -> /\n/' \
 	| sed -r -e 's/^"(.*)"$/\1/' `
-echo "$paths"
 best="" # narrowest all-encompassing scope
 stop=false
 
 while :; do
-	echo "======="
 	topdir="${paths%%/*}"
-	echo "topdir='$topdir'"
 	
 	if [ "$topdir" == "" ] ; then
-		echo "we're now down to a file!"
 		break
 	fi
 	
 	count=`echo "$paths" | wc -l` # count the lines
-	echo "paths:($count)"
-	echo "$paths"
 	topdiresc=`echo "$topdir" | sed -e 's/[]\/$*.^|[]/\\\&/g'` # escape the characters for sed to use!
-	echo "topdiresc:{$topdiresc}"
 	paths=`echo "$paths" | sed -rn -e "s/^$topdiresc\///p"`
-	
 	newcount=`echo "$paths" | wc -l` # count the lines
-	echo "new paths:($newcount)"
-	echo "$paths"
 	
 	if [ $count -ne $newcount ] ; then
-		echo "different!"
 		break
 	fi
 	
