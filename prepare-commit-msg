@@ -1,0 +1,88 @@
+#!/bin/bash
+#
+# This: gets the list of all staged files (not marked as ??)
+#		keeps only the path part
+#		separates the two paths when a file is renamed because such a change affects both directories
+#		removes the quotes if path is quoted by git
+#		keeps only the location of each path (i.e. gets rid of file names and files in root)
+#-e 's/^[MADRCU ]{2} (.*)$/\1/' \
+#git status --porcelain
+cmd=`cat $1`
+#cmd=`git status --porcelain`
+echo "$cmd"
+echo "=================="
+paths=`echo "$cmd" \
+	| sed -r -e '/^\?\?/d' \
+		-e 's/^.{3}//' \
+		-e 's/ -> /\n/' \
+	| sed -r -e 's/^"(.*)"$/\1/' `
+#		-e 's/^((.*)\/)?[^\/]*$/\2/'`
+echo "$paths"
+#echo "=================="
+best="" # narrowest all-encompassing scope
+stop=false
+
+#i=0
+#echo "$paths" | while read path; do # Keep only dirnames
+#	echo "$path"
+#	echo `dirname "$path"`
+#	echo i=$i
+#	dirs[$i]=`dirname $path`
+#	(( i++ ))
+#	echo i=$i
+#done
+#N=${#i[@]} # store list size
+#echo "N=$N"
+#for (( i=0; i<$N; i++ )); do
+#	echo "dirs[$i]=${dirs[$i]}"
+#done
+
+while :; do
+	echo "======="
+	#topdir="${paths%%\n*}" # get first path
+	#topdir="${topdir%%/*}" # get top directory of first path
+	topdir="${paths%%/*}"
+	echo "topdir='$topdir'"
+	
+	if [ "$topdir" == "" ] ; then
+		echo "we're now down to a file!"
+		break
+	fi
+	
+	count=`echo "$paths" | wc -l` # count the lines
+	echo "paths:($count)"
+	echo "$paths"
+	topdiresc=`echo "$topdir" | sed -e 's/[]\/$*.^|[]/\\\&/g'` # escape the characters for sed to use!
+	echo "topdiresc:{$topdiresc}"
+	paths=`echo "$paths" | sed -rn -e "s/^$topdiresc\///p"`
+	
+	newcount=`echo "$paths" | wc -l` # count the lines
+	echo "new paths:($newcount)"
+	echo "$paths"
+	
+	#echo "$paths" | while read path; do # iterate over all the paths
+	#	echo "Looking at: $path"
+	#	prevlen=${#path}
+	#	newpath="${path#$topdir/}"
+	#	newlen=${#newpath}
+	#	if [ "$newlen" -ne "$prevlen" ] ; then
+	#		stop=true
+	#		break
+	#	fi
+	#	newpaths=`echo -e "$newpaths\n$newpath"` # append new path
+	#done
+	
+	if [ $count -ne $newcount ] ; then
+		echo "different!"
+		break
+	fi
+	
+	#paths=$newpaths # save new paths for next iteration
+	best="$best/$topdir" # add top dir to the best
+done
+
+echo "best='$best'";
+#echo "$paths" | while read path; do
+#	echo "Working with: $path";
+#	topdir=
+#done
