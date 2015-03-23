@@ -7,7 +7,7 @@
 #		keeps only the location of each path (i.e. gets rid of file names and files in root)
 
 #CONFIG
-debug_enable=false
+debug_enable=true
 before="" # comes before the path
 default="/" # replaces the path if we're at the root
 after=": " # separates the path and the commit msg
@@ -26,7 +26,7 @@ debug() {
 debug "====input"
 debug "`git status --porcelain`"
 paths=`git status --porcelain \
-	| sed -r -e '/^\?\?/d' \
+	| sed -r -e '/^[^MADRCU]/d' \
 		-e 's/^.{3}//' \
 		-e 's/ -> /\n/' \
 	| sed -r -e 's/^"(.*)"$/\1/' `
