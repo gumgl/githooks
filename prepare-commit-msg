@@ -7,7 +7,7 @@
 #		keeps only the location of each path (i.e. gets rid of file names and files in root)
 
 #CONFIG
-debug_enable=true
+debug_enable=false
 before="" # comes before the path
 default="/" # replaces the path if we're at the root
 after=": " # separates the path and the commit msg
